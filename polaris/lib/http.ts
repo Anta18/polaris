@@ -36,12 +36,44 @@ export async function postJSON<T>(
         body: JSON.stringify(body),
         signal: controller.signal,
       });
+      
+      console.log(`[postJSON] ${url} - Status: ${res.status} ${res.statusText}`);
+      console.log(`[postJSON] Content-Type: ${res.headers.get("content-type")}`);
+      console.log(`[postJSON] Content-Length: ${res.headers.get("content-length")}`);
+      
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(`POST ${url} ${res.status} ${res.statusText} ${txt}`);
       }
-      return (await res.json()) as T;
+      
+      // Check if response has content
+      const contentType = res.headers.get("content-type");
+      const contentLength = res.headers.get("content-length");
+      
+      if (contentLength === "0") {
+        console.warn(`[postJSON] ${url} returned empty response (Content-Length: 0)`);
+        return {} as T;
+      }
+      
+      // Clone the response so we can read it multiple times if needed
+      const responseText = await res.text();
+      console.log(`[postJSON] Response body length: ${responseText.length}`);
+      console.log(`[postJSON] Response body preview: ${responseText.substring(0, 200)}`);
+      
+      if (!responseText || responseText.trim() === "") {
+        console.warn(`[postJSON] ${url} returned empty response body`);
+        return {} as T;
+      }
+      
+      try {
+        return JSON.parse(responseText) as T;
+      } catch (parseErr) {
+        console.error(`[postJSON] Failed to parse JSON from ${url}:`, parseErr);
+        console.error(`[postJSON] Response text:`, responseText);
+        throw new Error(`Failed to parse JSON response from ${url}: ${parseErr}`);
+      }
     } catch (err) {
+      console.error(`[postJSON] Error on attempt ${attempt + 1}/${retries + 1} for ${url}:`, err);
       if (attempt < retries) {
         await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt)));
         return run(attempt + 1);

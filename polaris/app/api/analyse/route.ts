@@ -12,7 +12,7 @@ import { enrichMissingOnly, summariseBatchAndWrite } from "@/lib/analyzers";
  *
  * This will:
  *   1) For each article needing any single-output fields, call only the required microservices.
- *   2) Batch-call :8001/v1/summarise_topics for articles missing `muti_source_summary`.
+ *   2) Batch-call :8001/v1/summarise_topics for articles missing muti_source_summary.
  */
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       { clickbait_score: null },
       { omitted_facts_articles: { $size: 0 } },
       { muti_source_summary: null },
+      { single_source_summary: null },
     ],
   })
     .sort({ updatedAt: 1 }) // oldest first
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   // Split into two sets: per-article enrichment vs batch-summarization
   const toSummarise: ArticleDoc[] = [];
   for (const a of candidates) {
-    if (!a.muti_source_summary) {
+    if (!a.muti_source_summary || !a.single_source_summary) {
       toSummarise.push(a);
     }
   }
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
       clickbait_label: 1,
       fake_news_label: 1,
       source_reliability: 1,
+      single_source_summary: 1,
       muti_source_summary: 1,
       updatedAt: 1,
     })

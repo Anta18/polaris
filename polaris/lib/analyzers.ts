@@ -123,7 +123,7 @@ export async function enrichSingleArticle(article: ArticleDoc) {
         return await postJSON<SentimentResp>(SENTIMENT_URL_FALLBACK, { text }, { retries: 1 });
       }
     })(),
-    postJSON<ClickbaitResp>(CLICKBAIT_URL, { content: text, title }, { retries: 1 }),
+    postJSON<ClickbaitResp>(CLICKBAIT_URL, { content: text, title }, { retries: 1, timeoutMs: 1200_000 }),
     postJSON<OmittedResp>(OMITTED_URL, {
       topic: subject,
       articles: [{ title, url: article.url }],
@@ -278,7 +278,12 @@ export async function enrichMissingOnly(article: ArticleDoc) {
 
   if (needsClickbait) {
     tasks.push((async () => {
-      const r = await postJSON<ClickbaitResp>(CLICKBAIT_URL, { content: text, title }, { retries: 1 });
+      console.log("CLICKBAIT_URL:", CLICKBAIT_URL);
+      console.log("content:", text);
+      console.log("title:", title);
+      console.log({ content: text, title });
+      // Clickbait API can be slow, increase timeout to 1200 seconds (20 minutes)
+      const r = await postJSON<ClickbaitResp>(CLICKBAIT_URL, { content: text, title }, { retries: 1, timeoutMs: 1200_000 });
       console.log("CLICKBAIT_URL response:", JSON.stringify(r, null, 2));
       updates.clickbait_label = r.label || undefined;
       updates.clickbait_score = r.score ?? undefined;
@@ -288,10 +293,11 @@ export async function enrichMissingOnly(article: ArticleDoc) {
 
   if (needsOmitted) {
     tasks.push((async () => {
+      // Omitted facts API can be slow, increase timeout to 1200 seconds (20 minutes)
       const r = await postJSON<OmittedResp>(OMITTED_URL, {
         topic: subject,
         articles: [{ title, url: article.url }],
-      }, { retries: 1 });
+      }, { retries: 1, timeoutMs: 1200_000 });
       console.log("OMITTED_URL response:", JSON.stringify(r, null, 2));
       updates.omitted_facts_articles = (r.articles || []).map(a => ({
         title: cleanText(a.title),
@@ -341,16 +347,32 @@ export async function summariseBatchAndWrite(articles: ArticleDoc[]) {
 
   console.log("SUMMARISE_URL response:", JSON.stringify(resp, null, 2));
 
+  // Build a map from article index to its cluster digest (multi-source summary)
+  const indexToDigest = new Map<number, string>();
+  for (const group of resp.groups || []) {
+    const digest = cleanText(group.digest || "");
+    for (const idx of group.indices || []) {
+      if (digest) {
+        indexToDigest.set(idx, digest);
+      }
+    }
+  }
+
   const per = resp.per_article_summary || [];
-  // Write the digest for each article into `muti_source_summary`
+  // Write both single source and multi-source summaries
   const updatePromises: Promise<unknown>[] = [];
   for (let i = 0; i < articles.length; i++) {
     const a = articles[i];
-    const summary = cleanText(per[i] || "") || undefined;
+    const singleSourceSummary = cleanText(per[i] || "") || undefined;
+    const multiSourceSummary = indexToDigest.get(i) || undefined;
+    
     updatePromises.push(Article.updateOne(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       { _id: (a as any)._id },
-      { $set: { muti_source_summary: summary } }
+      { $set: { 
+        single_source_summary: singleSourceSummary,
+        muti_source_summary: multiSourceSummary
+      } }
     ));
   }
   await Promise.all(updatePromises);
