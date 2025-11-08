@@ -960,7 +960,7 @@ export default function ArticlePage() {
                 <span className="font-medium text-sm">Back</span>
               </Link>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center shadow-lg shadow-[#3a7cf6]/20">
+                <div className="w-9 h-9 rounded-xl bg-[#3a7cf6] flex items-center justify-center shadow-lg shadow-[#3a7cf6]/20">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-lg font-bold text-[#e8eef7]">
@@ -1001,7 +1001,7 @@ export default function ArticlePage() {
             {/* Category & Metadata */}
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <span className="px-4 py-1.5 bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3a7cf6]/30">
+                <span className="px-4 py-1.5 bg-[#3a7cf6] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3a7cf6]/30">
                   {article.category}
                 </span>
                 {article.topic && (
@@ -1020,7 +1020,7 @@ export default function ArticlePage() {
             {/* Meta Info */}
             <div className="flex items-center gap-6 text-[#94a3b8] flex-wrap">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm">
                   {article.author.charAt(0)}
                 </div>
                 <div>
@@ -1074,7 +1074,7 @@ export default function ArticlePage() {
             {(article.single_source_summary || article.muti_source_summary) && (
               <div className="space-y-6 pt-8 border-t border-white/5">
                 <h2 className="text-2xl font-bold text-[#e8eef7] flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
                     <BarChart3 className="w-4 h-4 text-white" />
                   </div>
                   AI-Generated Summaries
@@ -1113,7 +1113,7 @@ export default function ArticlePage() {
             {/* Comments Section */}
             <div className="pt-8 border-t border-white/5">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#16a34a] to-[#22b7e3] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-[#16a34a] flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-[#e8eef7]">
@@ -1136,7 +1136,7 @@ export default function ArticlePage() {
                   />
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] text-white rounded-xl font-medium hover:shadow-lg hover:shadow-[#3a7cf6]/30 transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-[#3a7cf6] text-white rounded-xl font-medium hover:bg-[#2563eb] hover:shadow-lg hover:shadow-[#3a7cf6]/30 transition-all flex items-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -1159,7 +1159,7 @@ export default function ArticlePage() {
                       className="p-5 bg-white/5 rounded-xl border border-white/5 hover:border-[#3a7cf6]/30 transition-all"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                           {comment.userName.charAt(0)}
                         </div>
                         <div className="flex-1">
@@ -1190,7 +1190,7 @@ export default function ArticlePage() {
               {/* AI Analysis Card */}
               <div className="bg-white/5 rounded-2xl p-6 shadow-xl border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-[#e8eef7]">
@@ -1420,7 +1420,7 @@ export default function ArticlePage() {
               {article.bias_explain && article.bias_explain.length > 0 && (
                 <div className="bg-[#f4b227]/5 rounded-2xl p-6 shadow-xl border border-[#f4b227]/20">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f4b227] to-[#e23e57] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#f4b227] flex items-center justify-center">
                       <AlertTriangle className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-[#e8eef7]">
@@ -1460,7 +1460,7 @@ export default function ArticlePage() {
               {article.omitted_facts_articles && article.omitted_facts_articles.length > 0 && (
                 <div className="bg-[#22b7e3]/5 rounded-2xl p-6 shadow-xl border border-[#22b7e3]/20">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#22b7e3] to-[#3a7cf6] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#22b7e3] flex items-center justify-center">
                       <Eye className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-[#e8eef7]">
@@ -1496,7 +1496,7 @@ export default function ArticlePage() {
                 href={article.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full px-6 py-4 bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] text-white rounded-xl font-semibold text-center hover:shadow-xl hover:shadow-[#3a7cf6]/30 transition-all group"
+                className="block w-full px-6 py-4 bg-[#3a7cf6] text-white rounded-xl font-semibold text-center hover:bg-[#2563eb] hover:shadow-xl hover:shadow-[#3a7cf6]/30 transition-all group"
               >
                 <span className="flex items-center justify-center gap-2">
                   View Original Article
@@ -1512,7 +1512,7 @@ export default function ArticlePage() {
           <section className="mt-24">
             <div className="mb-12">
               <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#3a7cf6] to-[#22b7e3] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div>
