@@ -590,14 +590,14 @@
 //               )}
 
 //               {/* Omitted Facts */}
-//               {article.omitted_facts_articles && article.omitted_facts_articles.length > 0 && (
+//               {article.omitted_chunks && article.omitted_chunks.length > 0 && (
 //                 <div className="bg-white dark:bg-slate-800 rounded-lg p-5 shadow-md border border-slate-200 dark:border-slate-700">
 //                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
 //                     <Eye className="w-5 h-5 text-cyan-600 dark:text-cyan-500" />
 //                     Cross-Reference Check
 //                   </h3>
 //                   <div className="space-y-2.5">
-//                     {article.omitted_facts_articles.slice(0, 3).map((item, index) => (
+//                     {article.omitted_chunks.slice(0, 3).map((item, index) => (
 //                       <a
 //                         key={index}
 //                         href={item.url}
@@ -1510,47 +1510,51 @@ export default function ArticlePage() {
                   </div>
                 )}
 
-                {/* Cross-Reference */}
-                {article.omitted_facts_articles &&
-                  article.omitted_facts_articles.length > 0 && (
+                {/* Cross-Reference - Omitted Chunks */}
+                {article.omitted_chunks &&
+                  article.omitted_chunks.length > 0 && (
                     <div className="bg-[#22b7e3]/5 rounded-2xl p-6 shadow-xl border border-[#22b7e3]/20">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-xl bg-[#22b7e3] flex items-center justify-center">
                           <Eye className="w-5 h-5 text-white" />
                         </div>
                         <h3 className="text-lg font-bold text-[#e8eef7]">
-                          Cross-References
+                          Omitted Chunks
                         </h3>
                       </div>
                       <div className="space-y-3">
-                        {article.omitted_facts_articles
+                        {article.omitted_chunks
                           .slice(0, 3)
-                          .map((item, index) => (
-                            <a
+                          .map((chunk, index) => (
+                            <div
                               key={index}
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-[#22b7e3]/50 transition-all group"
                             >
-                              <p className="text-sm font-semibold text-[#e8eef7] mb-2 line-clamp-2 group-hover:text-[#22b7e3] transition-colors">
-                                {item.title}
+                              <p className="text-sm text-[#e8eef7] line-clamp-3 group-hover:text-[#22b7e3] transition-colors">
+                                {chunk}
                               </p>
-                              {item.omitted_segments &&
-                                item.omitted_segments.length > 0 && (
-                                  <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
-                                    <div className="w-2 h-2 rounded-full bg-[#22b7e3]"></div>
-                                    <span>
-                                      {item.omitted_segments.length} omitted
-                                      segment(s)
-                                    </span>
-                                  </div>
-                                )}
-                            </a>
+                            </div>
                           ))}
                       </div>
                     </div>
                   )}
+
+                {/* Omitted Summary */}
+                {article.omitted_summary && (
+                  <div className="bg-[#f4b227]/5 rounded-2xl p-6 shadow-xl border border-[#f4b227]/20">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#f4b227] flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-[#e8eef7]">
+                        Omitted Facts Summary
+                      </h3>
+                    </div>
+                    <p className="text-[#94a3b8] leading-relaxed">
+                      {article.omitted_summary}
+                    </p>
+                  </div>
+                )}
 
                 {/* View Original */}
                 <a

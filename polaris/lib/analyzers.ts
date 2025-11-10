@@ -28,6 +28,7 @@ type SentimentResp = { probabilities: Record<"negative" | "neutral" | "positive"
 type ClickbaitResp = { score: number; label: string; explanation?: string };
 type OmittedResp = {
   topic: string;
+  summary?: string;
   articles: {
     title: string;
     url: string;
@@ -173,16 +174,16 @@ export async function enrichSingleArticle(article: ArticleDoc) {
     updates.clickbait_explanation = cleanText(clickbaitRes.value.explanation || "") || undefined;
   }
 
-  // --- :8002/detect_omitted_facts → omitted_facts_articles[]
+  // --- :8002/detect_omitted_facts → omitted_chunks[] and omitted_summary
   if (omittedRes.status === "fulfilled") {
-    updates.omitted_facts_articles = (omittedRes.value.articles || []).map((a) => ({
-      title: cleanText(a.title),
-      url: a.url,
-      omitted_segments: (a.omitted_segments || []).map((s) => ({
-        chunk: cleanText(s.chunk),
-        max_similarity: s.max_similarity,
-      })),
-    }));
+    // Extract chunk strings from all omitted segments
+    updates.omitted_chunks = (omittedRes.value.articles || []).flatMap((a) =>
+      (a.omitted_segments || []).map((s) => cleanText(s.chunk))
+    );
+    // Extract summary if available
+    if (omittedRes.value.summary) {
+      updates.omitted_summary = cleanText(omittedRes.value.summary);
+    }
   }
 
   if (Object.keys(updates).length) {
@@ -220,7 +221,8 @@ export async function enrichMissingOnly(article: ArticleDoc) {
     article.clickbait_label == null || article.clickbait_score == null;
 
   const needsOmitted =
-    !article.omitted_facts_articles || (Array.isArray(article.omitted_facts_articles) && article.omitted_facts_articles.length === 0);
+    !article.omitted_chunks || (Array.isArray(article.omitted_chunks) && article.omitted_chunks.length === 0) ||
+    !article.omitted_summary;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: Record<string, any> = {};
@@ -299,14 +301,14 @@ export async function enrichMissingOnly(article: ArticleDoc) {
         articles: [{ title, url: article.url }],
       }, { retries: 1, timeoutMs: 1200_000 });
       console.log("OMITTED_URL response:", JSON.stringify(r, null, 2));
-      updates.omitted_facts_articles = (r.articles || []).map(a => ({
-        title: cleanText(a.title),
-        url: a.url,
-        omitted_segments: (a.omitted_segments || []).map(s => ({
-          chunk: cleanText(s.chunk),
-          max_similarity: s.max_similarity,
-        })),
-      }));
+      // Extract chunk strings from all omitted segments
+      updates.omitted_chunks = (r.articles || []).flatMap(a =>
+        (a.omitted_segments || []).map(s => cleanText(s.chunk))
+      );
+      // Extract summary if available
+      if (r.summary) {
+        updates.omitted_summary = cleanText(r.summary);
+      }
     })());
   }
 

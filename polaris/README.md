@@ -192,14 +192,8 @@ Query parameters:
   
   topic: string;                        // Primary topic
   
-  omitted_facts_articles: Array<{
-    title: string;
-    url: string;
-    omitted_segments: Array<{
-      chunk: string;
-      max_similarity: number;
-    }>;
-  }>;
+  omitted_chunks: string[];             // Array of omitted fact chunks (strings)
+  omitted_summary: string;              // Summary of omitted facts
   
   fake_news_label: string;              // Authenticity label
   fake_news_probs: Map<string, number>;

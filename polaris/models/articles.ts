@@ -10,23 +10,6 @@ const biasExplainSchema = new Schema(
   { _id: false }
 );
 
-const omittedSegmentSchema = new Schema(
-  {
-    chunk: { type: String, required: true },
-    max_similarity: { type: Number, required: true },
-  },
-  { _id: false }
-);
-
-const omittedFactsArticleSchema = new Schema(
-  {
-    title: { type: String, required: true },
-    url: { type: String, required: true },
-    omitted_segments: { type: [omittedSegmentSchema], default: [] },
-  },
-  { _id: false }
-);
-
 /* ---------- Comment subdoc ---------- */
 const commentSchema = new Schema(
   {
@@ -72,8 +55,9 @@ const articleSchema = new Schema(
     // Topic (singular)
     topic: { type: String, default: null },
 
-    // Omitted facts cross-checks
-    omitted_facts_articles: { type: [omittedFactsArticleSchema], default: [] },
+    // Omitted facts cross-checks - array of string chunks
+    omitted_chunks: { type: [String], default: [] },
+    omitted_summary: { type: String, default: null },
 
     // Fake news / reliability
     fake_news_label: { type: String, default: null },

@@ -46,13 +46,13 @@ export function NewsSidebar({ children }: { children: React.ReactNode }) {
         <IconTrendingUp className="h-5 w-5 shrink-0 text-gray-400 group-hover/sidebar:text-blue-400 transition-colors duration-200" />
       ),
     },
-    {
-      label: "Bias Analysis",
-      href: "#bias",
-      icon: (
-        <IconShield className="h-5 w-5 shrink-0 text-gray-400 group-hover/sidebar:text-blue-400 transition-colors duration-200" />
-      ),
-    },
+    // {
+    //   label: "Bias Analysis",
+    //   href: "#bias",
+    //   icon: (
+    //     <IconShield className="h-5 w-5 shrink-0 text-gray-400 group-hover/sidebar:text-blue-400 transition-colors duration-200" />
+    //   ),
+    // },
     {
       label: "Saved Articles",
       href: "#saved",
