@@ -1,9 +1,0 @@
-venv/
-myenv/
-.env
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-residual_adapters.pt
-
