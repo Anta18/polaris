@@ -1,4 +1,3 @@
-# train_adapter_roberta.py
 import os, json, argparse, random, math
 from dataclasses import dataclass
 from typing import List, Dict, Optional
@@ -16,22 +15,17 @@ from transformers import (
     DataCollatorWithPadding, Trainer, TrainingArguments
 )
 
-# -------------------------
-# Adapter module (residual)
-# -------------------------
 class ResidualAdapter(nn.Module):
     def __init__(self, hidden_size: int, bottleneck: int = 64):
         super().__init__()
         self.down = nn.Linear(hidden_size, bottleneck)
         self.up = nn.Linear(bottleneck, hidden_size)
-        # Zero-init the up-projection (weights AND bias)
         nn.init.zeros_(self.up.weight)
         if self.up.bias is not None:
             nn.init.zeros_(self.up.bias)
         self.act = nn.ReLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x: (B, H) or (B, T, H)
         if x.dim() == 2:
             delta = self.up(self.act(self.down(x)))
         elif x.dim() == 3:
@@ -41,9 +35,6 @@ class ResidualAdapter(nn.Module):
             raise ValueError("Adapter expects 2D or 3D tensor")
         return x + delta
 
-# -------------------------
-# Model: RoBERTa + Adapter
-# -------------------------
 class RobertaAdapterClassifier(nn.Module):
     def __init__(self, base_model_name: str, num_labels: int, bottleneck: int = 64, class_weights: Optional[torch.Tensor] = None):
         super().__init__()
@@ -54,25 +45,22 @@ class RobertaAdapterClassifier(nn.Module):
         self.classifier = nn.Linear(hidden, num_labels)
         self.num_labels = num_labels
 
-        # Freeze all RoBERTa parameters
         for p in self.roberta.parameters():
             p.requires_grad = False
 
-        # Optionally set weighted CE for class imbalance
         self.register_buffer("class_weights", class_weights if class_weights is not None else None)
 
     def mean_pooling(self, last_hidden_state, attention_mask):
-        # (B, T, H), (B, T)
-        mask = attention_mask.unsqueeze(-1)  # (B, T, 1)
+        mask = attention_mask.unsqueeze(-1)
         masked = last_hidden_state * mask
-        summed = masked.sum(dim=1)  # (B, H)
-        counts = mask.sum(dim=1).clamp(min=1)  # avoid div by zero
+        summed = masked.sum(dim=1)
+        counts = mask.sum(dim=1).clamp(min=1)
         return summed / counts
 
     def forward(self, input_ids=None, attention_mask=None, labels=None):
         outputs = self.roberta(input_ids=input_ids, attention_mask=attention_mask)
-        pooled = self.mean_pooling(outputs.last_hidden_state, attention_mask)  # (B, H)
-        adapted = self.adapter(pooled)  # residual
+        pooled = self.mean_pooling(outputs.last_hidden_state, attention_mask)
+        adapted = self.adapter(pooled)
         x = self.dropout(adapted)
         logits = self.classifier(x)
 
@@ -86,20 +74,15 @@ class RobertaAdapterClassifier(nn.Module):
 
         return {"loss": loss, "logits": logits}
 
-# -------------------------
-# Dataset
-# -------------------------
 class BiasDataset(Dataset):
     def __init__(self, df: pd.DataFrame, tokenizer, label2id: Dict[str, int], max_length: int = 512):
         self.max_length = max_length
         self.tokenizer = tokenizer
         self.label2id = label2id
 
-        # Build input_text per spec: Title + " [SEP] " + Text + " [SEP] " + Source
         def safe_text(x):
             if pd.isna(x): return ""
             s = str(x)
-            # quick de-mojibake for common cases
             s = s.replace("â€™", "’").replace("â€œ", "“").replace("â€", "”").replace("â€“", "–").replace("â€”", "—")
             return s
 
@@ -124,9 +107,6 @@ class BiasDataset(Dataset):
         item["labels"] = torch.tensor(self.labels[idx], dtype=torch.long)
         return item
 
-# -------------------------
-# Metrics
-# -------------------------
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = logits.argmax(-1)
@@ -134,9 +114,6 @@ def compute_metrics(eval_pred):
     f1m = f1_score(labels, preds, average="macro")
     return {"accuracy": acc, "f1_macro": f1m}
 
-# -------------------------
-# Main
-# -------------------------
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--csv", type=str, required=True, help="Path to CSV with Title, Text, Source, Bias columns")
@@ -144,7 +121,7 @@ def main():
     parser.add_argument("--output_dir", type=str, default="./roberta_adapter_bias")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--lr", type=float, default=1e-3)  # adapters often like a slightly higher LR
+    parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--bottleneck", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--val_ratio", type=float, default=0.15)
@@ -154,41 +131,33 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Load & normalize labels
     df = pd.read_csv(args.csv)
     needed_cols = {"Title", "Text", "Source", "Bias"}
     missing = needed_cols - set(df.columns)
     if missing:
         raise ValueError(f"CSV missing columns: {missing}")
 
-    # canonical label order
     labels = ["lean left", "left", "center", "right", "lean right"]
     label2id = {lbl: i for i, lbl in enumerate(labels)}
 
-    # Clean Bias column to canonical set
     df["Bias"] = df["Bias"].str.strip().str.lower()
     bad = set(df["Bias"].unique()) - set(labels)
     if bad:
         raise ValueError(f"Found unexpected labels: {bad}. Expected one of {labels}")
 
-    # Split
     train_df, val_df = train_test_split(
         df, test_size=args.val_ratio, random_state=args.seed, stratify=df["Bias"].values
     )
 
-    # Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.base_model, use_fast=True)
 
-    # Datasets
     train_ds = BiasDataset(train_df, tokenizer, label2id)
     val_ds = BiasDataset(val_df, tokenizer, label2id)
 
-    # Class weights (balanced)
     counts = train_df["Bias"].value_counts().reindex(labels).fillna(0).values.astype(np.float32)
     weights = (counts.sum() / np.maximum(counts, 1.0)) / len(counts)
     class_weights = torch.tensor(weights, dtype=torch.float)
 
-    # Model
     model = RobertaAdapterClassifier(
         base_model_name=args.base_model,
         num_labels=len(labels),
@@ -196,10 +165,8 @@ def main():
         class_weights=class_weights
     )
 
-    # Data collator (pad to longest in batch)
     collator = DataCollatorWithPadding(tokenizer=tokenizer, pad_to_multiple_of=None)
 
-    # Training args
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.batch_size,
@@ -217,7 +184,6 @@ def main():
         seed=args.seed
     )
 
-    # Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -232,7 +198,6 @@ def main():
     metrics = trainer.evaluate()
     print(metrics)
 
-    # Save weights + tokenizer + small config for the server
     torch.save(model.state_dict(), os.path.join(args.output_dir, "pytorch_model.bin"))
     tokenizer.save_pretrained(args.output_dir)
     with open(os.path.join(args.output_dir, "adapter_config.json"), "w", encoding="utf-8") as f:

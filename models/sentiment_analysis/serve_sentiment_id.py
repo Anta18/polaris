@@ -1,4 +1,3 @@
-# serve_sentiment_ids.py
 import os, json
 from typing import List, Dict
 
@@ -11,7 +10,6 @@ from transformers import AutoTokenizer, AutoModel
 
 MODEL_DIR= "./bert_adapter_sentiment"
 
-# ------- Adapter + model (match training) -------
 class ResidualAdapter(nn.Module):
     def __init__(self, hidden_size: int, bottleneck: int = 64):
         super().__init__()
@@ -49,14 +47,12 @@ class BertAdapterClassifier(nn.Module):
         x = self.dropout(x)
         return self.classifier(x)
 
-# ------- API types -------
 class PredictBody(BaseModel):
     text: str
 
 class PredictBatch(BaseModel):
     items: List[str]
 
-# ------- App -------
 app = FastAPI(title="Sentiment Adapter Classifier (IDs)", version="1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -69,8 +65,8 @@ MODEL_DIR = os.environ.get("MODEL_DIR", "./bert_adapter_sentiment")
 with open(os.path.join(MODEL_DIR, "adapter_config.json"), "r", encoding="utf-8") as f:
     cfg = json.load(f)
 
-labels: List[str] = cfg["labels"]     # names ordered by IDs
-ids: List[int] = cfg["ids"]           # ordered IDs
+labels: List[str] = cfg["labels"]
+ids: List[int] = cfg["ids"]
 tokenizer = AutoTokenizer.from_pretrained(cfg["base_model"], use_fast=True)
 
 model = BertAdapterClassifier(
@@ -93,9 +89,8 @@ def _probs(texts: List[str]) -> List[Dict[str, float]]:
     enc = tokenizer(texts, truncation=True, padding=True, max_length=cfg.get("max_length", 256), return_tensors="pt")
     enc = {k: v.to(device) for k, v in enc.items()}
     with torch.no_grad():
-        logits = model(**enc)                     # (B, num_labels)
+        logits = model(**enc)
         probs = torch.softmax(logits, dim=-1).cpu().numpy().tolist()
-    # map to readable names following ID order
     return [{name: float(p[i]) for i, name in enumerate(labels)} for p in probs]
 
 @app.post("/predict")

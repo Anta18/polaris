@@ -6,7 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
 const MONGO_URI = "mongodb://127.0.0.1:27017/polaris_news_db";
 
 mongoose
@@ -14,7 +13,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB!"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
-/* ---------- Subschemas for analytics ---------- */
 const biasExplainSchema = new mongoose.Schema(
   {
     phrase: { type: String, required: true },
@@ -41,7 +39,6 @@ const omittedFactsArticleSchema = new mongoose.Schema(
   { _id: false }
 );
 
-/* ---------- Article Schema & Model ---------- */
 const articleSchema = new mongoose.Schema({
   id: { type: String, default: null },
   title: { type: String, default: "Untitled News" },
@@ -55,36 +52,28 @@ const articleSchema = new mongoose.Schema({
   category: { type: String, default: "General" },
   topics: { type: [String], default: ["news"] },
 
-  // --- NEW: Bias classification ---
   bias_classification_label: { type: String, default: null },
-  bias_classification_probs: { type: Map, of: Number, default: {} }, // e.g. {"lean left": 0.98, ...}
+  bias_classification_probs: { type: Map, of: Number, default: {} },
   bias_explain: { type: [biasExplainSchema], default: [] },
 
-  // --- NEW: Sentiment analysis ---
   sentiment_analysis_label: { type: String, default: null },
-  sentiment_analysis_probs: { type: Map, of: Number, default: {} }, // e.g. {"negative": 0.03, ...}
+  sentiment_analysis_probs: { type: Map, of: Number, default: {} },
 
-  // --- NEW: Clickbait detection ---
-  clickbait_label: { type: String, default: null }, // e.g. "clickbait" / "not_clickbait"
-  clickbait_score: { type: Number, default: null }, // probability/score
+  clickbait_label: { type: String, default: null },
+  clickbait_score: { type: Number, default: null },
   clickbait_explanation: { type: String, default: null },
 
-  // --- NEW: Topic (singular) ---
   topic: { type: String, default: null },
 
-  // --- NEW: Omitted-facts cross-checks ---
   omitted_facts_articles: { type: [omittedFactsArticleSchema], default: [] },
 
-  // --- NEW: Fake news / reliability ---
-  fake_news_label: { type: String, default: null }, // e.g. "misleading" / "trustworthy"
-  fake_news_probs: { type: Map, of: Number, default: {} }, // {"misleading": x, "trustworthy": y}
-  source_reliability: { type: Number, default: null }, // keep numeric; adjust if your API returns strings
+  fake_news_label: { type: String, default: null },
+  fake_news_probs: { type: Map, of: Number, default: {} },
+  source_reliability: { type: Number, default: null },
 
-  // --- NEW: Summaries ---
-  muti_source_summary: { type: String, default: null }, // (spelled per your API)
+  muti_source_summary: { type: String, default: null },
   single_source_summary: { type: String, default: null },
 
-  // --- Existing engagement fields ---
   likes: { type: Number, default: 0 },
   comments: {
     type: [
@@ -103,10 +92,8 @@ const articleSchema = new mongoose.Schema({
 
 const Article = mongoose.model("Article", articleSchema);
 
-/* ---------- Helpers ---------- */
 const formatArticle = (article, includeMongoId = false) => {
   const base = {
-    // _id: includeMongoId ? article._id : undefined,
     id: article.id,
     title: article.title,
     description: article.description,
@@ -121,7 +108,6 @@ const formatArticle = (article, includeMongoId = false) => {
     likes: article.likes,
     comments: article.comments,
 
-    // --- analytics fields in responses ---
     bias_classification_label: article.bias_classification_label,
     bias_classification_probs: article.bias_classification_probs,
     bias_explain: article.bias_explain,
@@ -148,9 +134,6 @@ const formatArticle = (article, includeMongoId = false) => {
   return base;
 };
 
-/* ---------- Routes ---------- */
-
-// GET News API
 app.get("/news", async (req, res) => {
   try {
     const articles = await Article.find({}).sort({ _id: -1 });
@@ -169,7 +152,6 @@ app.get("/news", async (req, res) => {
   }
 });
 
-// GET /for_you_news - optional filters
 app.get("/for_you_news", async (req, res) => {
   try {
     let filter = {};
@@ -199,7 +181,6 @@ app.get("/for_you_news", async (req, res) => {
   }
 });
 
-// User_liked_articles
 app.get("/user_liked_articles", async (req, res) => {
   try {
     const { articleIds } = req.query;
@@ -221,7 +202,6 @@ app.get("/user_liked_articles", async (req, res) => {
   }
 });
 
-// GET single article
 app.get("/api/articles/:id", async (req, res) => {
   try {
     const article = await Article.findOne({ id: req.params.id });
@@ -233,7 +213,6 @@ app.get("/api/articles/:id", async (req, res) => {
   }
 });
 
-// POST: Like an Article
 app.post("/api/articles/:id/like", async (req, res) => {
   try {
     const article = await Article.findOne({ id: req.params.id });
@@ -247,7 +226,6 @@ app.post("/api/articles/:id/like", async (req, res) => {
   }
 });
 
-// POST: Add a comment
 app.post("/api/articles/:id/comment", async (req, res) => {
   try {
     const { userId, userName, text } = req.body;
@@ -275,6 +253,5 @@ app.post("/api/articles/:id/comment", async (req, res) => {
   }
 });
 
-// Start Server
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,4 +1,3 @@
-# serve.py
 import os, json
 from typing import List, Dict, Optional
 
@@ -12,7 +11,7 @@ import string
 from fastapi import Query
 
 try:
-    from ftfy import fix_text as _fix_text  # pip install ftfy
+    from ftfy import fix_text as _fix_text
     def _clean(s: Optional[str]) -> str:
         return _fix_text("" if s is None else str(s))
 except Exception:
@@ -20,20 +19,18 @@ except Exception:
         if s is None:
             return ""
         s = str(s)
-        # try common Latin-1 → UTF-8 roundtrip
         try:
             s2 = s.encode("latin1").decode("utf-8")
             if len(s2) >= 0.6 * len(s):
                 s = s2
         except Exception:
             pass
-        # common replacements
         repl = {
             "â€™": "’", "â€˜": "‘",
             "â€œ": "“", "â€": "”",
             "â€“": "–", "â€”": "—",
             "â€¦": "…", "Â": "",
-            "âĢĻ": "’",  # your specific case
+            "âĢĻ": "’",
         }
         for a, b in repl.items():
             s = s.replace(a, b)
@@ -41,7 +38,6 @@ except Exception:
 
 MODEL_DIR = "./roberta_adapter_bias"
 
-# --- same adapter and model definitions as training ---
 class ResidualAdapter(nn.Module):
     def __init__(self, hidden_size: int, bottleneck: int = 64):
         super().__init__()
@@ -78,7 +74,6 @@ class RobertaAdapterClassifier(nn.Module):
         logits = self.classifier(x)
         return logits
 
-# ------------- API -------------
 class PredictBody(BaseModel):
     Title: Optional[str] = ""
     Text: Optional[str] = ""
@@ -133,14 +128,13 @@ model.to(device)
 #     return s
 
 def _pack_input(title: str, text: str, source: str) -> str:
-    # EXACT spec preserved; we only clean mojibake for readability/consistency
     return f"{_clean(title)} [SEP] {_clean(text)} [SEP] {_clean(source)}"
 
 def _predict_str(input_text: str) -> Dict[str, float]:
     enc = tokenizer(input_text, return_tensors="pt", truncation=True, max_length=512)
     enc = {k: v.to(device) for k, v in enc.items()}
     with torch.no_grad():
-        logits = model(**enc)  # (1, num_labels)
+        logits = model(**enc)
         probs = torch.softmax(logits, dim=-1).cpu().numpy().flatten().tolist()
     return {lbl: float(p) for lbl, p in zip(labels, probs)}
 
@@ -153,8 +147,6 @@ def predict(body: PredictBody):
 def predict_raw(body: RawBody):
     return {"probabilities": _predict_str(body.input_text)}
 
-# ---------------- NEW: token attribution-based explanation ----------------
-
 def _token_ids_text_scores(
     input_text: str,
     target_idx: Optional[int] = None,
@@ -164,7 +156,6 @@ def _token_ids_text_scores(
     - Zeros out scores for tokens overlapping the literal " [SEP] " markers
     - Zeros out scores for tokens in the final Source segment (after 2nd [SEP])
     """
-    # 1) tokenize WITH offsets so we can locate [SEP] and Source
     enc = tokenizer(
         input_text,
         return_tensors="pt",
@@ -172,12 +163,11 @@ def _token_ids_text_scores(
         max_length=512,
         return_offsets_mapping=True,
     )
-    offsets = enc.pop("offset_mapping")[0].tolist()   # list[[start,end], ...] on CPU
+    offsets = enc.pop("offset_mapping")[0].tolist()
     enc = {k: v.to(device) for k, v in enc.items()}
-    input_ids = enc["input_ids"]        # (1, T)
+    input_ids = enc["input_ids"]
     attention_mask = enc["attention_mask"]
 
-    # 2) prediction pass (no grad)
     with torch.no_grad():
         logits = model(**enc)
         probs = torch.softmax(logits, dim=-1)[0]
@@ -186,25 +176,23 @@ def _token_ids_text_scores(
     if target_idx is None:
         target_idx = pred_idx
 
-    # 3) second pass with grad on token features
     model.zero_grad(set_to_none=True)
     with torch.enable_grad():
         out = model.roberta(input_ids=input_ids, attention_mask=attention_mask, return_dict=True)
-        hs = out.last_hidden_state.detach().requires_grad_(True)  # (1, T, H) leaf w/ grad
+        hs = out.last_hidden_state.detach().requires_grad_(True)
 
         pooled  = model.mean_pooling(hs, attention_mask)
         adapted = model.adapter(pooled)
         x       = model.dropout(adapted)
-        logits2 = model.classifier(x)  # (1, C)
+        logits2 = model.classifier(x)
 
         selected = logits2[0, target_idx]
         selected.backward()
 
-        grads = hs.grad.abs()[0]           # (T, H)
-        token_scores = grads.sum(dim=-1)   # (T,)
-        token_scores *= attention_mask[0]  # zero pads
+        grads = hs.grad.abs()[0]
+        token_scores = grads.sum(dim=-1)
+        token_scores *= attention_mask[0]
 
-        # 4) Hard-boundary masking for literal " [SEP] " and Source segment
         sep = " [SEP] "
         seps = []
         i = -1
@@ -215,15 +203,12 @@ def _token_ids_text_scores(
             seps.append((i, i + len(sep)))
         source_start = seps[1][1] if len(seps) >= 2 else None
 
-        # Build a mask (1 keeps, 0 drops)
         keep = torch.ones_like(token_scores)
         for t, (a, b) in enumerate(offsets):
-            # drop any token that overlaps a [SEP] span
             for s, e in seps:
-                if not (b <= s or a >= e):   # overlap
+                if not (b <= s or a >= e):
                     keep[t] = 0
                     break
-            # drop tokens in Source segment (after 2nd [SEP])
             if source_start is not None and a >= source_start:
                 keep[t] = 0
 
@@ -254,11 +239,9 @@ def _merge_roberta_bpe_to_words(tokens: List[str], scores: List[float], token_id
             flush()
             continue
 
-        # RoBERTa uses 'Ġ' for a leading space (word start)
         starts_new = tok.startswith("Ġ")
         piece = tok.lstrip("Ġ").replace("Ċ", "").replace("▁", "")
 
-        # If we hit literal SEP/brackets or punctuation-only -> boundary
         low = piece.lower()
         if low in {"[", "]", "sep"} or (piece and all(ch in string.punctuation for ch in piece)):
             flush()
@@ -279,11 +262,9 @@ def _explain_text(input_text: str, top_k: int = 10):
     token_ids, toks, t_scores, pred_idx, pred_prob = _token_ids_text_scores(input_text)
     word_scores = _merge_roberta_bpe_to_words(toks, t_scores, token_ids)
 
-    # Rank by score (descending)
     word_scores.sort(key=lambda x: x[1], reverse=True)
     top = word_scores[:max(1, top_k)]
 
-    # Optional: normalize to weights that sum to 1 for readability
     total = sum(s for _, s in top) or 1.0
     top_payload = [{"phrase": _clean(w), "score": float(s), "weight": float(s / total)} for w, s in top]
 
@@ -301,4 +282,3 @@ def explain(body: PredictBody, top_k: int = Query(10, ge=1, le=50)):
     """
     input_text = _pack_input(body.Title, body.Text, body.Source)
     return {"input_text": input_text, **_explain_text(input_text, top_k=top_k)}
-# ---------------- END NEW ----------------

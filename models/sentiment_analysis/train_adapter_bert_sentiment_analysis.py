@@ -1,4 +1,3 @@
-# train_adapter_bert_sentiment_ids.py
 import os, json, argparse, random, inspect
 from collections import Counter
 from typing import Dict, List, Optional
@@ -13,7 +12,6 @@ from sklearn.metrics import accuracy_score, f1_score
 
 from transformers import AutoTokenizer, AutoModel, DataCollatorWithPadding, Trainer, TrainingArguments
 
-# ---------- Adapter ----------
 class ResidualAdapter(nn.Module):
     def __init__(self, hidden_size: int, bottleneck: int = 64):
         super().__init__()
@@ -26,13 +24,12 @@ class ResidualAdapter(nn.Module):
     def forward(self, x):
         return x + self.up(self.act(self.down(x)))
 
-# ---------- Model (BERT frozen) ----------
 class BertAdapterClassifier(nn.Module):
     def __init__(self, base_model_name: str, num_labels: int, bottleneck: int = 64, class_weights: Optional[torch.Tensor] = None, pooling: str = "mean"):
         super().__init__()
         self.bert = AutoModel.from_pretrained(base_model_name)
         hidden = self.bert.config.hidden_size
-        self.pooling = pooling  # "mean" or "cls"
+        self.pooling = pooling
         self.adapter = ResidualAdapter(hidden, bottleneck)
         self.dropout = nn.Dropout(self.bert.config.hidden_dropout_prob)
         self.classifier = nn.Linear(hidden, num_labels)
@@ -40,7 +37,6 @@ class BertAdapterClassifier(nn.Module):
         for p in self.bert.parameters():
             p.requires_grad = False
 
-        # training-only
         self.register_buffer("class_weights", class_weights if class_weights is not None else torch.empty(0), persistent=False)
 
     def mean_pool(self, last_hidden_state, attention_mask):
@@ -62,7 +58,6 @@ class BertAdapterClassifier(nn.Module):
             loss = ce(logits, labels)
         return {"loss": loss, "logits": logits}
 
-# ---------- Dataset ----------
 class SentimentIdsDataset(Dataset):
     def __init__(self, df: pd.DataFrame, tokenizer, max_length: int = 256):
         self.texts = df["text"].astype(str).tolist()
@@ -76,13 +71,11 @@ class SentimentIdsDataset(Dataset):
         item["labels"] = torch.tensor(self.labels[i], dtype=torch.long)
         return item
 
-# ---------- Metrics ----------
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = logits.argmax(-1)
     return {"accuracy": accuracy_score(labels, preds), "f1_macro": f1_score(labels, preds, average="macro")}
 
-# # ---------- Version-proof TrainingArguments ----------
 # def make_training_args(**kw):
 #     sig = inspect.signature(TrainingArguments.__init__)
 #     supported = set(sig.parameters.keys())
@@ -92,7 +85,6 @@ def compute_metrics(eval_pred):
 #             out["evaluate_during_training"] = True
 #     return TrainingArguments(**out)
 
-# ---------- Main ----------
 def main():
     ap = argparse.ArgumentParser()
     # ap.add_argument("--csv", required=True)
@@ -119,7 +111,6 @@ def main():
     df = df.dropna(subset=["text", "label"]).copy()
     df["label"] = df["label"].astype(int)
 
-    # Build id->name mapping (use 'sentiment' if available)
     ids_sorted = sorted(df["label"].unique().tolist())
     if "sentiment" in df.columns:
         name_for = (df[["label", "sentiment"]].dropna()
@@ -128,17 +119,15 @@ def main():
         id2label = {int(k): str(v) for k, v in name_for.to_dict().items()}
     else:
         id2label = {i: str(i) for i in ids_sorted}
-    labels = [id2label[i] for i in ids_sorted]  # ordered names
+    labels = [id2label[i] for i in ids_sorted]
     num_labels = len(ids_sorted)
 
-    # Split
     train_df, val_df = train_test_split(df, test_size=args.val_ratio, random_state=args.seed, stratify=df["label"])
     tokenizer = AutoTokenizer.from_pretrained(args.base_model, use_fast=True)
 
     train_ds = SentimentIdsDataset(train_df, tokenizer, max_length=args.max_length)
     val_ds   = SentimentIdsDataset(val_df, tokenizer, max_length=args.max_length)
 
-    # Class weights
     counts = train_df["label"].value_counts().reindex(ids_sorted).fillna(0).values.astype(np.float32)
     weights = (counts.sum() / np.maximum(counts, 1.0)) / len(counts)
     class_weights = torch.tensor(weights, dtype=torch.float)
@@ -179,15 +168,14 @@ def main():
     trainer.train()
     print("Eval:", trainer.evaluate())
 
-    # Save
     torch.save(model.state_dict(), os.path.join(args.output_dir, "pytorch_model.bin"))
     tokenizer.save_pretrained(args.output_dir)
     with open(os.path.join(args.output_dir, "adapter_config.json"), "w", encoding="utf-8") as f:
         json.dump({
             "base_model": args.base_model,
-            "labels": labels,                 # ordered names
-            "ids": ids_sorted,                # ordered ids
-            "id2label": id2label,             # dict
+            "labels": labels,
+            "ids": ids_sorted,
+            "id2label": id2label,
             "num_labels": num_labels,
             "bottleneck": args.bottleneck,
             "pooling": args.pooling,
