@@ -43,7 +43,7 @@
 //       try {
 //         const response = await fetch(`/api/articles?id=${id}`);
 //         const data = await response.json();
-        
+
 //         if (data.article) {
 //           setArticle(data.article);
 //           setLocalLikes(data.article.likes || 0);
@@ -729,8 +729,6 @@
 //   );
 // }
 
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -783,10 +781,10 @@ export default function ArticlePage() {
       try {
         // Reset animation state when fetching new article
         setAnimateBars(false);
-        
+
         const response = await fetch(`/api/articles?id=${id}`);
         const data = await response.json();
-        
+
         if (data.article) {
           setArticle(data.article);
           setLocalLikes(data.article.likes || 0);
@@ -794,16 +792,18 @@ export default function ArticlePage() {
 
           if (data.article.category) {
             const relatedResponse = await fetch(
-              `/api/articles?category=${encodeURIComponent(data.article.category)}&limit=3`
+              `/api/articles?category=${encodeURIComponent(
+                data.article.category
+              )}&limit=3`
             );
             const relatedData = await relatedResponse.json();
             setRelatedArticles(
-              (relatedData.articles || []).filter(
-                (a: ArticleDoc) => a.id !== data.article.id
-              ).slice(0, 3)
+              (relatedData.articles || [])
+                .filter((a: ArticleDoc) => a.id !== data.article.id)
+                .slice(0, 3)
             );
           }
-          
+
           // Trigger animation after a short delay
           setTimeout(() => {
             setAnimateBars(true);
@@ -902,7 +902,9 @@ export default function ArticlePage() {
           <h1 className="text-2xl font-bold text-[#e8eef7] mb-2">
             Article not found
           </h1>
-          <p className="text-[#94a3b8] mb-6">The article you're looking for doesn't exist</p>
+          <p className="text-[#94a3b8] mb-6">
+            The article you're looking for doesn't exist
+          </p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#3a7cf6] text-white rounded-xl font-medium hover:bg-[#2047b8] transition-all"
@@ -915,16 +917,22 @@ export default function ArticlePage() {
     );
   }
 
-  const formattedDate = new Date(article.publishedAt).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedDate = new Date(article.publishedAt).toLocaleDateString(
+    "en-US",
+    {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
 
-  const formattedTime = new Date(article.publishedAt).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedTime = new Date(article.publishedAt).toLocaleTimeString(
+    "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
 
   const getBiasColor = (label: string | null) => {
     if (!label) return "bg-[#94a3b8]";
@@ -944,120 +952,122 @@ export default function ArticlePage() {
 
   return (
     <NewsSidebar>
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-xl border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-[#94a3b8] hover:text-[#3a7cf6] transition-colors group"
-              >
-                <div className="p-2 rounded-xl bg-white/5 group-hover:bg-[#3a7cf6]/10 transition-colors border border-white/5">
-                  <ArrowLeft className="w-4 h-4" />
+      <div className="min-h-screen bg-black">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-xl border-b border-zinc-800">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-[#94a3b8] hover:text-[#3a7cf6] transition-colors group"
+                >
+                  <div className="p-2 rounded-xl bg-white/5 group-hover:bg-[#3a7cf6]/10 transition-colors border border-white/5">
+                    <ArrowLeft className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium text-sm">Back</span>
+                </Link>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#3a7cf6] flex items-center justify-center shadow-lg shadow-[#3a7cf6]/20">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-lg font-bold text-[#e8eef7]">
+                    Polaris News
+                  </span>
                 </div>
-                <span className="font-medium text-sm">Back</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#3a7cf6] flex items-center justify-center shadow-lg shadow-[#3a7cf6]/20">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-[#e8eef7]">
-                  Polaris News
-                </span>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                  liked
-                    ? "bg-[#e23e57] text-white shadow-lg shadow-[#e23e57]/30"
-                    : "bg-white/5 text-[#94a3b8] hover:bg-[#e23e57]/10 hover:text-[#e23e57] border border-white/5"
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
-                <span className="text-sm">{localLikes}</span>
-              </button>
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-white/5 text-[#94a3b8] hover:bg-[#3a7cf6]/10 hover:text-[#3a7cf6] transition-all border border-white/5"
-              >
-                <Share2 className="w-4 h-4" />
-                <span className="text-sm">Share</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                    liked
+                      ? "bg-[#e23e57] text-white shadow-lg shadow-[#e23e57]/30"
+                      : "bg-white/5 text-[#94a3b8] hover:bg-[#e23e57]/10 hover:text-[#e23e57] border border-white/5"
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
+                  <span className="text-sm">{localLikes}</span>
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-white/5 text-[#94a3b8] hover:bg-[#3a7cf6]/10 hover:text-[#3a7cf6] transition-all border border-white/5"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="text-sm">Share</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Article Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Main Content */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* Category & Metadata */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <span className="px-4 py-1.5 bg-[#3a7cf6] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3a7cf6]/30">
-                  {article.category}
-                </span>
-                {article.topic && (
-                  <span className="px-4 py-1.5 bg-white/5 text-[#94a3b8] rounded-full text-sm font-medium border border-white/5">
-                    {article.topic}
+        {/* Article Content */}
+        <main className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Main Content */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Category & Metadata */}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="px-4 py-1.5 bg-[#3a7cf6] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3a7cf6]/30">
+                    {article.category}
                   </span>
-                )}
-              </div>
-            </div>
-
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#e8eef7] leading-tight tracking-tight">
-              {article.title}
-            </h1>
-
-            {/* Meta Info */}
-            <div className="flex items-center gap-6 text-[#94a3b8] flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm">
-                  {article.author.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#e8eef7]">{article.author}</p>
-                  <p className="text-xs text-[#94a3b8]">{article.source}</p>
+                  {article.topic && (
+                    <span className="px-4 py-1.5 bg-white/5 text-[#94a3b8] rounded-full text-sm font-medium border border-white/5">
+                      {article.topic}
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formattedDate}</span>
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#e8eef7] leading-tight tracking-tight">
+                {article.title}
+              </h1>
+
+              {/* Meta Info */}
+              <div className="flex items-center gap-6 text-[#94a3b8] flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm">
+                    {article.author.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#e8eef7]">
+                      {article.author}
+                    </p>
+                    <p className="text-xs text-[#94a3b8]">{article.source}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>{formattedTime}</span>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    <span>{formattedDate}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    <span>{formattedTime}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Featured Image */}
-            <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-900">
-              <Image
-                src={article.imageUrl || "/placeholder.svg"}
-                alt={article.title}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-            </div>
+              {/* Featured Image */}
+              <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 bg-zinc-900">
+                <Image
+                  src={article.imageUrl || "/placeholder.svg"}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+              </div>
 
-            {/* Description */}
-            <div className="relative">
-              <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#3a7cf6] to-[#22b7e3] rounded-full"></div>
-              <p className="text-xl text-[#94a3b8] leading-relaxed pl-8 font-medium italic">
-                {article.description}
-              </p>
-            </div>
+              {/* Description */}
+              <div className="relative">
+                <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#3a7cf6] to-[#22b7e3] rounded-full"></div>
+                <p className="text-xl text-[#94a3b8] leading-relaxed pl-8 font-medium italic">
+                  {article.description}
+                </p>
+              </div>
 
             {/* Content */}
             <div className="prose prose-lg prose-invert max-w-none">
@@ -1071,542 +1081,604 @@ export default function ArticlePage() {
               </div>
             </div>
 
-            {/* Summaries */}
-            {(article.single_source_summary || article.muti_source_summary) && (
-              <div className="space-y-6 pt-8 border-t border-white/5">
-                <h2 className="text-2xl font-bold text-[#e8eef7] flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-white" />
-                  </div>
-                  AI-Generated Summaries
-                </h2>
-                
-                {article.single_source_summary && (
-                  <div className="relative p-6 rounded-2xl bg-[#3a7cf6]/5 border border-[#3a7cf6]/20">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FileText className="w-5 h-5 text-[#3a7cf6]" />
-                      <h3 className="text-lg font-bold text-[#e8eef7]">
-                        Single Source Analysis
-                      </h3>
+              {/* Summaries */}
+              {(article.single_source_summary ||
+                article.muti_source_summary) && (
+                <div className="space-y-6 pt-8 border-t border-white/5">
+                  <h2 className="text-2xl font-bold text-[#e8eef7] flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
+                      <BarChart3 className="w-4 h-4 text-white" />
                     </div>
-                    <p className="text-[#94a3b8] leading-relaxed">
-                      {article.single_source_summary}
-                    </p>
-                  </div>
-                )}
+                    AI-Generated Summaries
+                  </h2>
 
-                {article.muti_source_summary && (
-                  <div className="relative p-6 rounded-2xl bg-[#22b7e3]/5 border border-[#22b7e3]/20">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FileText className="w-5 h-5 text-[#22b7e3]" />
-                      <h3 className="text-lg font-bold text-[#e8eef7]">
-                        Cross-Source Analysis
-                      </h3>
+                  {article.single_source_summary && (
+                    <div className="relative p-6 rounded-2xl bg-[#3a7cf6]/5 border border-[#3a7cf6]/20">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FileText className="w-5 h-5 text-[#3a7cf6]" />
+                        <h3 className="text-lg font-bold text-[#e8eef7]">
+                          Single Source Analysis
+                        </h3>
+                      </div>
+                      <p className="text-[#94a3b8] leading-relaxed">
+                        {article.single_source_summary}
+                      </p>
                     </div>
-                    <p className="text-[#94a3b8] leading-relaxed">
-                      {article.muti_source_summary}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
 
-            {/* Comments Section */}
-            <div className="pt-8 border-t border-white/5">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-xl bg-[#16a34a] flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-white" />
+                  {article.muti_source_summary && (
+                    <div className="relative p-6 rounded-2xl bg-[#22b7e3]/5 border border-[#22b7e3]/20">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FileText className="w-5 h-5 text-[#22b7e3]" />
+                        <h3 className="text-lg font-bold text-[#e8eef7]">
+                          Cross-Source Analysis
+                        </h3>
+                      </div>
+                      <p className="text-[#94a3b8] leading-relaxed">
+                        {article.muti_source_summary}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-2xl font-bold text-[#e8eef7]">
-                  Discussion
-                </h3>
-                <span className="px-3 py-1 bg-white/5 text-[#94a3b8] rounded-full text-sm font-medium">
-                  {comments.length}
-                </span>
-              </div>
+              )}
 
-              {/* Comment Form */}
-              <form onSubmit={handleCommentSubmit} className="mb-8">
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Share your perspective..."
-                    className="flex-1 px-5 py-3 rounded-xl bg-white/5 text-[#e8eef7] placeholder:text-[#94a3b8] outline-none focus:ring-2 focus:ring-[#3a7cf6] border border-white/5 transition-all"
-                  />
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-[#3a7cf6] text-white rounded-xl font-medium hover:bg-[#2563eb] hover:shadow-lg hover:shadow-[#3a7cf6]/30 transition-all flex items-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
-              </form>
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {comments.length === 0 ? (
-                  <div className="text-center py-12 bg-white/5 rounded-xl border border-dashed border-white/10">
-                    <MessageCircle className="w-12 h-12 text-[#94a3b8]/30 mx-auto mb-3" />
-                    <p className="text-[#94a3b8] text-sm">
-                      Be the first to share your thoughts
-                    </p>
+              {/* Comments Section */}
+              <div className="pt-8 border-t border-white/5">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 rounded-xl bg-[#16a34a] flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4 text-white" />
                   </div>
-                ) : (
-                  comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="p-5 bg-white/5 rounded-xl border border-white/5 hover:border-[#3a7cf6]/30 transition-all"
+                  <h3 className="text-2xl font-bold text-[#e8eef7]">
+                    Discussion
+                  </h3>
+                  <span className="px-3 py-1 bg-white/5 text-[#94a3b8] rounded-full text-sm font-medium">
+                    {comments.length}
+                  </span>
+                </div>
+
+                {/* Comment Form */}
+                <form onSubmit={handleCommentSubmit} className="mb-8">
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="Share your perspective..."
+                      className="flex-1 px-5 py-3 rounded-xl bg-white/5 text-[#e8eef7] placeholder:text-[#94a3b8] outline-none focus:ring-2 focus:ring-[#3a7cf6] border border-white/5 transition-all"
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-[#3a7cf6] text-white rounded-xl font-medium hover:bg-[#2563eb] hover:shadow-lg hover:shadow-[#3a7cf6]/30 transition-all flex items-center gap-2"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                          {comment.userName.charAt(0)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <p className="font-semibold text-[#e8eef7] text-sm">
-                              {comment.userName}
-                            </p>
-                            <span className="text-xs text-[#94a3b8]">•</span>
-                            <p className="text-xs text-[#94a3b8]">
-                              {new Date(comment.createdAt).toLocaleDateString()}
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {comments.length === 0 ? (
+                    <div className="text-center py-12 bg-white/5 rounded-xl border border-dashed border-white/10">
+                      <MessageCircle className="w-12 h-12 text-[#94a3b8]/30 mx-auto mb-3" />
+                      <p className="text-[#94a3b8] text-sm">
+                        Be the first to share your thoughts
+                      </p>
+                    </div>
+                  ) : (
+                    comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="p-5 bg-white/5 rounded-xl border border-white/5 hover:border-[#3a7cf6]/30 transition-all"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[#3a7cf6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            {comment.userName.charAt(0)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="font-semibold text-[#e8eef7] text-sm">
+                                {comment.userName}
+                              </p>
+                              <span className="text-xs text-[#94a3b8]">•</span>
+                              <p className="text-xs text-[#94a3b8]">
+                                {new Date(
+                                  comment.createdAt
+                                ).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <p className="text-[#94a3b8] text-sm leading-relaxed">
+                              {comment.content}
                             </p>
                           </div>
-                          <p className="text-[#94a3b8] text-sm leading-relaxed">
-                            {comment.content}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="sticky top-24 space-y-6">
+                {/* AI Analysis Card */}
+                <div className="bg-white/5 rounded-2xl p-6 shadow-xl border border-white/10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#e8eef7]">
+                      AI Analysis
+                    </h3>
+                  </div>
+
+                  {/* Bias Analysis */}
+                  <div className="mb-6 pb-6 border-b border-white/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
+                        Political Bias
+                      </span>
+                      <span
+                        className={`${getBiasColor(
+                          article.bias_classification_label
+                        )} text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
+                      >
+                        {article.bias_classification_label || "Neutral"}
+                      </span>
+                    </div>
+                    {article.bias_classification_probs &&
+                      Object.keys(article.bias_classification_probs).length >
+                        0 && (
+                        <div className="space-y-2 mt-4">
+                          {Object.entries(
+                            article.bias_classification_probs
+                          ).map(([key, value], index) => (
+                            <div key={key}>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-[#94a3b8] capitalize font-medium">
+                                  {key}
+                                </span>
+                                <span className="text-[#e8eef7] font-bold">
+                                  {((value as number) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] rounded-full"
+                                  initial={{ width: 0 }}
+                                  animate={{
+                                    width: animateBars
+                                      ? `${(value as number) * 100}%`
+                                      : 0,
+                                  }}
+                                  transition={{
+                                    duration: 0.8,
+                                    delay: index * 0.1,
+                                    ease: "easeOut",
+                                  }}
+                                ></motion.div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Sentiment Analysis */}
+                  <div className="mb-6 pb-6 border-b border-white/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
+                        Sentiment
+                      </span>
+                      <span
+                        className={`${getSentimentColor(
+                          article.sentiment_analysis_label
+                        )} text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
+                      >
+                        {article.sentiment_analysis_label || "Neutral"}
+                      </span>
+                    </div>
+                    {article.sentiment_analysis_probs &&
+                      Object.keys(article.sentiment_analysis_probs).length >
+                        0 && (
+                        <div className="space-y-2 mt-4">
+                          {Object.entries(article.sentiment_analysis_probs).map(
+                            ([key, value], index) => (
+                              <div key={key}>
+                                <div className="flex items-center justify-between text-xs mb-1">
+                                  <span className="text-[#94a3b8] capitalize font-medium">
+                                    {key}
+                                  </span>
+                                  <span className="text-[#e8eef7] font-bold">
+                                    {((value as number) * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[#16a34a] to-[#22b7e3] rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{
+                                      width: animateBars
+                                        ? `${(value as number) * 100}%`
+                                        : 0,
+                                    }}
+                                    transition={{
+                                      duration: 0.8,
+                                      delay: index * 0.1,
+                                      ease: "easeOut",
+                                    }}
+                                  ></motion.div>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+                  </div>
+
+                  {/* Clickbait Detection */}
+                  {article.clickbait_label && (
+                    <div className="mb-6 pb-6 border-b border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
+                          Clickbait Score
+                        </span>
+                        <span
+                          className={`${
+                            article.clickbait_label === "clickbait"
+                              ? "bg-gradient-to-r from-[#f4b227] to-[#e23e57]"
+                              : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
+                          } text-white text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-lg`}
+                        >
+                          {article.clickbait_label === "clickbait" ? (
+                            <>
+                              <Zap className="w-3 h-3" />
+                              High
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3 h-3" />
+                              Low
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      {article.clickbait_score !== null && (
+                        <div className="mt-3">
+                          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                              className={`h-full ${
+                                article.clickbait_score > 0.7
+                                  ? "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
+                                  : article.clickbait_score > 0.4
+                                  ? "bg-gradient-to-r from-[#f4b227] to-[#22b7e3]"
+                                  : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
+                              } rounded-full`}
+                              initial={{ width: 0 }}
+                              animate={{
+                                width: animateBars
+                                  ? `${article.clickbait_score * 100}%`
+                                  : 0,
+                              }}
+                              transition={{
+                                duration: 0.8,
+                                delay: 0.3,
+                                ease: "easeOut",
+                              }}
+                            ></motion.div>
+                          </div>
+                          <p className="text-xs text-[#94a3b8] mt-2 text-center">
+                            {(article.clickbait_score * 100).toFixed(0)}%
+                            confidence
                           </p>
                         </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Source Reliability */}
+                  {article.source_reliability !== null && (
+                    <div className="mb-6 pb-6 border-b border-white/5">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
+                          Source Reliability
+                        </span>
+                        <span className="text-[#e8eef7] font-bold text-lg">
+                          {(article.source_reliability * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full ${
+                            article.source_reliability >= 0.8
+                              ? "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
+                              : article.source_reliability >= 0.5
+                              ? "bg-gradient-to-r from-[#f4b227] to-[#22b7e3]"
+                              : "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
+                          } rounded-full`}
+                          initial={{ width: 0 }}
+                          animate={{
+                            width: animateBars
+                              ? `${article.source_reliability * 100}%`
+                              : 0,
+                          }}
+                          transition={{
+                            duration: 0.8,
+                            delay: 0.2,
+                            ease: "easeOut",
+                          }}
+                        ></motion.div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="sticky top-24 space-y-6">
-              {/* AI Analysis Card */}
-              <div className="bg-white/5 rounded-2xl p-6 shadow-xl border border-white/10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#e8eef7]">
-                    AI Analysis
-                  </h3>
-                </div>
-
-                {/* Bias Analysis */}
-                <div className="mb-6 pb-6 border-b border-white/5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                      Political Bias
-                    </span>
-                    <span
-                      className={`${getBiasColor(
-                        article.bias_classification_label
-                      )} text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
-                    >
-                      {article.bias_classification_label || "Neutral"}
-                    </span>
-                  </div>
-                  {article.bias_classification_probs && Object.keys(article.bias_classification_probs).length > 0 && (
-                    <div className="space-y-2 mt-4">
-                      {Object.entries(article.bias_classification_probs).map(([key, value], index) => (
-                        <div key={key}>
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-[#94a3b8] capitalize font-medium">{key}</span>
-                            <span className="text-[#e8eef7] font-bold">
-                              {((value as number) * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] rounded-full"
-                              initial={{ width: 0 }}
-                              animate={{ width: animateBars ? `${(value as number) * 100}%` : 0 }}
-                              transition={{ 
-                                duration: 0.8, 
-                                delay: index * 0.1,
-                                ease: "easeOut"
-                              }}
-                            ></motion.div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   )}
-                </div>
 
-                {/* Sentiment Analysis */}
-                <div className="mb-6 pb-6 border-b border-white/5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                      Sentiment
-                    </span>
-                    <span
-                      className={`${getSentimentColor(
-                        article.sentiment_analysis_label
-                      )} text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
-                    >
-                      {article.sentiment_analysis_label || "Neutral"}
-                    </span>
-                  </div>
-                  {article.sentiment_analysis_probs && Object.keys(article.sentiment_analysis_probs).length > 0 && (
-                    <div className="space-y-2 mt-4">
-                      {Object.entries(article.sentiment_analysis_probs).map(([key, value], index) => (
-                        <div key={key}>
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-[#94a3b8] capitalize font-medium">{key}</span>
-                            <span className="text-[#e8eef7] font-bold">
-                              {((value as number) * 100).toFixed(1)}%
-                            </span>
+                  {/* Authenticity Check */}
+                  {article.fake_news_label && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
+                          Authenticity
+                        </span>
+                        <span
+                          className={`${
+                            article.fake_news_label
+                              .toLowerCase()
+                              .includes("fake")
+                              ? "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
+                              : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
+                          } text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
+                        >
+                          {article.fake_news_label}
+                        </span>
+                      </div>
+                      {article.fake_news_probs &&
+                        Object.keys(article.fake_news_probs).length > 0 && (
+                          <div className="space-y-2 mt-3">
+                            {Object.entries(article.fake_news_probs).map(
+                              ([key, value], index) => (
+                                <div key={key}>
+                                  <div className="flex items-center justify-between text-xs mb-1">
+                                    <span className="text-[#94a3b8] capitalize font-medium">
+                                      {key}
+                                    </span>
+                                    <span className="text-[#e8eef7] font-bold">
+                                      {((value as number) * 100).toFixed(1)}%
+                                    </span>
+                                  </div>
+                                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div
+                                      className="h-full bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] rounded-full"
+                                      initial={{ width: 0 }}
+                                      animate={{
+                                        width: animateBars
+                                          ? `${(value as number) * 100}%`
+                                          : 0,
+                                      }}
+                                      transition={{
+                                        duration: 0.8,
+                                        delay: index * 0.1,
+                                        ease: "easeOut",
+                                      }}
+                                    ></motion.div>
+                                  </div>
+                                </div>
+                              )
+                            )}
                           </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-[#16a34a] to-[#22b7e3] rounded-full"
-                              initial={{ width: 0 }}
-                              animate={{ width: animateBars ? `${(value as number) * 100}%` : 0 }}
-                              transition={{ 
-                                duration: 0.8, 
-                                delay: index * 0.1,
-                                ease: "easeOut"
-                              }}
-                            ></motion.div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Clickbait Detection */}
-                {article.clickbait_label && (
-                  <div className="mb-6 pb-6 border-b border-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                        Clickbait Score
-                      </span>
-                      <span
-                        className={`${
-                          article.clickbait_label === "clickbait"
-                            ? "bg-gradient-to-r from-[#f4b227] to-[#e23e57]"
-                            : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
-                        } text-white text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-lg`}
-                      >
-                        {article.clickbait_label === "clickbait" ? (
-                          <>
-                            <Zap className="w-3 h-3" />
-                            High
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-3 h-3" />
-                            Low
-                          </>
                         )}
-                      </span>
                     </div>
-                    {article.clickbait_score !== null && (
-                      <div className="mt-3">
-                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                          <motion.div
-                            className={`h-full ${
-                              article.clickbait_score > 0.7
-                                ? "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
-                                : article.clickbait_score > 0.4
-                                ? "bg-gradient-to-r from-[#f4b227] to-[#22b7e3]"
-                                : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
-                            } rounded-full`}
-                            initial={{ width: 0 }}
-                            animate={{ width: animateBars ? `${article.clickbait_score * 100}%` : 0 }}
-                            transition={{ 
-                              duration: 0.8, 
-                              delay: 0.3,
-                              ease: "easeOut"
-                            }}
-                          ></motion.div>
-                        </div>
-                        <p className="text-xs text-[#94a3b8] mt-2 text-center">
-                          {(article.clickbait_score * 100).toFixed(0)}% confidence
-                        </p>
+                  )}
+                </div>
+
+                {/* Bias Indicators */}
+                {article.bias_explain && article.bias_explain.length > 0 && (
+                  <div className="bg-[#f4b227]/5 rounded-2xl p-6 shadow-xl border border-[#f4b227]/20">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-[#f4b227] flex items-center justify-center">
+                        <AlertTriangle className="w-5 h-5 text-white" />
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Source Reliability */}
-                {article.source_reliability !== null && (
-                  <div className="mb-6 pb-6 border-b border-white/5">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                        Source Reliability
-                      </span>
-                      <span className="text-[#e8eef7] font-bold text-lg">
-                        {(article.source_reliability * 100).toFixed(0)}%
-                      </span>
+                      <h3 className="text-lg font-bold text-[#e8eef7]">
+                        Bias Indicators
+                      </h3>
                     </div>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div
-                        className={`h-full ${
-                          article.source_reliability >= 0.8
-                            ? "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
-                            : article.source_reliability >= 0.5
-                            ? "bg-gradient-to-r from-[#f4b227] to-[#22b7e3]"
-                            : "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
-                        } rounded-full`}
-                        initial={{ width: 0 }}
-                        animate={{ width: animateBars ? `${article.source_reliability * 100}%` : 0 }}
-                        transition={{ 
-                          duration: 0.8, 
-                          delay: 0.2,
-                          ease: "easeOut"
-                        }}
-                      ></motion.div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Authenticity Check */}
-                {article.fake_news_label && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider">
-                        Authenticity
-                      </span>
-                      <span
-                        className={`${
-                          article.fake_news_label.toLowerCase().includes("fake")
-                            ? "bg-gradient-to-r from-[#e23e57] to-[#f4b227]"
-                            : "bg-gradient-to-r from-[#16a34a] to-[#22b7e3]"
-                        } text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg`}
-                      >
-                        {article.fake_news_label}
-                      </span>
-                    </div>
-                    {article.fake_news_probs && Object.keys(article.fake_news_probs).length > 0 && (
-                      <div className="space-y-2 mt-3">
-                        {Object.entries(article.fake_news_probs).map(([key, value], index) => (
-                          <div key={key}>
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="text-[#94a3b8] capitalize font-medium">{key}</span>
-                              <span className="text-[#e8eef7] font-bold">
-                                {((value as number) * 100).toFixed(1)}%
+                    <div className="space-y-3">
+                      {article.bias_explain.slice(0, 5).map((item, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-white/5 rounded-xl border border-white/10"
+                        >
+                          <p className="text-sm font-semibold text-[#e8eef7] mb-2">
+                            "{item.phrase}"
+                          </p>
+                          <div className="flex items-center gap-4 text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[#94a3b8]">Score:</span>
+                              <span className="text-[#f4b227] font-bold">
+                                {item.score.toFixed(2)}
                               </span>
                             </div>
-                            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-[#3a7cf6] to-[#22b7e3] rounded-full"
-                                initial={{ width: 0 }}
-                                animate={{ width: animateBars ? `${(value as number) * 100}%` : 0 }}
-                                transition={{ 
-                                  duration: 0.8, 
-                                  delay: index * 0.1,
-                                  ease: "easeOut"
-                                }}
-                              ></motion.div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[#94a3b8]">Weight:</span>
+                              <span className="text-[#f4b227] font-bold">
+                                {item.weight.toFixed(2)}
+                              </span>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
 
-              {/* Bias Indicators */}
-              {article.bias_explain && article.bias_explain.length > 0 && (
-                <div className="bg-[#f4b227]/5 rounded-2xl p-6 shadow-xl border border-[#f4b227]/20">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-[#f4b227] flex items-center justify-center">
-                      <AlertTriangle className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#e8eef7]">
-                      Bias Indicators
-                    </h3>
-                  </div>
-                  <div className="space-y-3">
-                    {article.bias_explain.slice(0, 5).map((item, index) => (
-                      <div
-                        key={index}
-                        className="p-4 bg-white/5 rounded-xl border border-white/10"
-                      >
-                        <p className="text-sm font-semibold text-[#e8eef7] mb-2">
-                          "{item.phrase}"
-                        </p>
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[#94a3b8]">Score:</span>
-                            <span className="text-[#f4b227] font-bold">
-                              {item.score.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[#94a3b8]">Weight:</span>
-                            <span className="text-[#f4b227] font-bold">
-                              {item.weight.toFixed(2)}
-                            </span>
-                          </div>
+                {/* Cross-Reference */}
+                {article.omitted_facts_articles &&
+                  article.omitted_facts_articles.length > 0 && (
+                    <div className="bg-[#22b7e3]/5 rounded-2xl p-6 shadow-xl border border-[#22b7e3]/20">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-[#22b7e3] flex items-center justify-center">
+                          <Eye className="w-5 h-5 text-white" />
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Cross-Reference */}
-              {article.omitted_facts_articles && article.omitted_facts_articles.length > 0 && (
-                <div className="bg-[#22b7e3]/5 rounded-2xl p-6 shadow-xl border border-[#22b7e3]/20">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-[#22b7e3] flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#e8eef7]">
-                      Cross-References
-                    </h3>
-                  </div>
-                  <div className="space-y-3">
-                    {article.omitted_facts_articles.slice(0, 3).map((item, index) => (
-                      <a
-                        key={index}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-[#22b7e3]/50 transition-all group"
-                      >
-                        <p className="text-sm font-semibold text-[#e8eef7] mb-2 line-clamp-2 group-hover:text-[#22b7e3] transition-colors">
-                          {item.title}
-                        </p>
-                        {item.omitted_segments && item.omitted_segments.length > 0 && (
-                          <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
-                            <div className="w-2 h-2 rounded-full bg-[#22b7e3]"></div>
-                            <span>{item.omitted_segments.length} omitted segment(s)</span>
-                          </div>
-                        )}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* View Original */}
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full px-6 py-4 bg-[#3a7cf6] text-white rounded-xl font-semibold text-center hover:bg-[#2563eb] hover:shadow-xl hover:shadow-[#3a7cf6]/30 transition-all group"
-              >
-                <span className="flex items-center justify-center gap-2">
-                  View Original Article
-                  <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Related Articles */}
-        {relatedArticles.length > 0 && (
-          <section className="mt-24">
-            <div className="mb-12">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-[#e8eef7]">
-                    Related Articles
-                  </h2>
-                  <p className="text-[#94a3b8]">
-                    More from {article?.category}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {relatedArticles.map((relatedArticle) => {
-                const formattedDate = new Date(relatedArticle.publishedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-
-                const getBiasColor = (label: string | null) => {
-                  if (!label) return "bg-[#94a3b8]";
-                  const lower = label.toLowerCase();
-                  if (lower.includes("left")) return "bg-[#3a7cf6]";
-                  if (lower.includes("right")) return "bg-[#e23e57]";
-                  return "bg-[#16a34a]";
-                };
-
-                return (
-                  <Link
-                    key={relatedArticle.id || (relatedArticle as any)._id?.toString()}
-                    href={`/article/${relatedArticle.id || (relatedArticle as any)._id}`}
-                    className="block group"
-                  >
-                    <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-zinc-800 hover:border-blue-500/30 h-full">
-                      <div className="relative h-52 overflow-hidden">
-                        <Image
-                          src={relatedArticle.imageUrl || "/placeholder.svg"}
-                          alt={relatedArticle.title}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                        <div className="absolute bottom-4 left-4">
-                          <span
-                            className={`${getBiasColor(relatedArticle.bias_classification_label)} text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg`}
-                          >
-                            {relatedArticle.bias_classification_label || "Neutral"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        <h3 className="text-lg font-bold text-[#e8eef7] line-clamp-2 group-hover:text-[#3a7cf6] transition-colors mb-3 leading-snug">
-                          {relatedArticle.title}
+                        <h3 className="text-lg font-bold text-[#e8eef7]">
+                          Cross-References
                         </h3>
-                        <p className="text-sm text-[#94a3b8] line-clamp-2 mb-4 leading-relaxed">
-                          {relatedArticle.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-[#94a3b8]">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {formattedDate}
+                      </div>
+                      <div className="space-y-3">
+                        {article.omitted_facts_articles
+                          .slice(0, 3)
+                          .map((item, index) => (
+                            <a
+                              key={index}
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block p-4 bg-white/5 rounded-xl border border-white/10 hover:border-[#22b7e3]/50 transition-all group"
+                            >
+                              <p className="text-sm font-semibold text-[#e8eef7] mb-2 line-clamp-2 group-hover:text-[#22b7e3] transition-colors">
+                                {item.title}
+                              </p>
+                              {item.omitted_segments &&
+                                item.omitted_segments.length > 0 && (
+                                  <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
+                                    <div className="w-2 h-2 rounded-full bg-[#22b7e3]"></div>
+                                    <span>
+                                      {item.omitted_segments.length} omitted
+                                      segment(s)
+                                    </span>
+                                  </div>
+                                )}
+                            </a>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* View Original */}
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full px-6 py-4 bg-[#3a7cf6] text-white rounded-xl font-semibold text-center hover:bg-[#2563eb] hover:shadow-xl hover:shadow-[#3a7cf6]/30 transition-all group"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    View Original Article
+                    <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Related Articles */}
+          {relatedArticles.length > 0 && (
+            <section className="mt-24">
+              <div className="mb-12">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#3a7cf6] flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-[#e8eef7]">
+                      Related Articles
+                    </h2>
+                    <p className="text-[#94a3b8]">
+                      More from {article?.category}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {relatedArticles.map((relatedArticle) => {
+                  const formattedDate = new Date(
+                    relatedArticle.publishedAt
+                  ).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  });
+
+                  const getBiasColor = (label: string | null) => {
+                    if (!label) return "bg-[#94a3b8]";
+                    const lower = label.toLowerCase();
+                    if (lower.includes("left")) return "bg-[#3a7cf6]";
+                    if (lower.includes("right")) return "bg-[#e23e57]";
+                    return "bg-[#16a34a]";
+                  };
+
+                  return (
+                    <Link
+                      key={
+                        relatedArticle.id ||
+                        (relatedArticle as any)._id?.toString()
+                      }
+                      href={`/article/${
+                        relatedArticle.id || (relatedArticle as any)._id
+                      }`}
+                      className="block group"
+                    >
+                      <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-zinc-800 hover:border-blue-500/30 h-full">
+                        <div className="relative h-52 overflow-hidden">
+                          <Image
+                            src={relatedArticle.imageUrl || "/placeholder.svg"}
+                            alt={relatedArticle.title}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+                          <div className="absolute bottom-4 left-4">
+                            <span
+                              className={`${getBiasColor(
+                                relatedArticle.bias_classification_label
+                              )} text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg`}
+                            >
+                              {relatedArticle.bias_classification_label ||
+                                "Neutral"}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5" />
-                            {relatedArticle.author}
+                        </div>
+                        <div className="p-6">
+                          <h3 className="text-lg font-bold text-[#e8eef7] line-clamp-2 group-hover:text-[#3a7cf6] transition-colors mb-3 leading-snug">
+                            {relatedArticle.title}
+                          </h3>
+                          <p className="text-sm text-[#94a3b8] line-clamp-2 mb-4 leading-relaxed">
+                            {relatedArticle.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-[#94a3b8]">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {formattedDate}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5" />
+                              {relatedArticle.author}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        )}
-      </main>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </main>
 
-      {/* Footer */}
-      <footer className="bg-zinc-900 border-t border-zinc-800 mt-24">
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Newspaper className="w-6 h-6 text-blue-400" />
-              <span className="text-lg font-bold text-gray-100">Polaris News</span>
+        {/* Footer */}
+        <footer className="bg-zinc-900 border-t border-zinc-800 mt-24">
+          <div className="max-w-7xl mx-auto px-6 py-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Newspaper className="w-6 h-6 text-blue-400" />
+                <span className="text-lg font-bold text-gray-100">
+                  Polaris News
+                </span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                © 2025 Polaris News. Professional news intelligence platform.
+              </p>
             </div>
-            <p className="text-gray-400 text-sm">
-              © 2025 Polaris News. Professional news intelligence platform.
-            </p>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
     </NewsSidebar>
   );
 }
