@@ -1061,11 +1061,12 @@ export default function ArticlePage() {
 
             {/* Content */}
             <div className="prose prose-lg prose-invert max-w-none">
-              <div className="text-[#94a3b8] leading-relaxed text-lg space-y-6">
+              <div className="text-[#94a3b8] leading-relaxed text-lg space-y-6 
+                              first-letter:text-5xl first-letter:font-bold 
+                              first-letter:text-[#3a7cf6] first-letter:float-left 
+                              first-letter:mr-3 first-letter:leading-none first-letter:mt-1">
                 {article.content.split('\n\n').map((paragraph, idx) => (
-                  <p key={idx} className="first-letter:text-5xl first-letter:font-bold first-letter:text-[#3a7cf6] first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:mt-1">
-                    {paragraph}
-                  </p>
+                  <p key={idx}>{paragraph}</p>
                 ))}
               </div>
             </div>
