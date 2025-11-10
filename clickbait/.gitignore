@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Model files
+models/base_model/*
+models/lora_adapter/*
+!models/base_model/.gitkeep
+!models/lora_adapter/.gitkeep
+
+# Training
+training_output/
+logs/
+*.log
+
+# Data
+data/
+*.csv
+*.json
+!data/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# PyTorch
+*.pth
+*.pt
+
+# HuggingFace
+.cache/
+hub/
+
+training_output/
+myenv/
+models/

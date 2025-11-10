@@ -1,0 +1,2 @@
+"""Clickbait Detection API package."""
+
