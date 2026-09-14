@@ -1,4 +1,4 @@
-# 🌟 Polaris News - Truth-Powered News Intelligence
+# 🌟 POLARIS: Political Leaning Analysis and Reliable Information System
 
 A stunning, AI-powered news aggregation platform with advanced analytics including bias detection, sentiment analysis, clickbait detection, and fact-checking capabilities.
 
